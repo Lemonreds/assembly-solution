@@ -1,0 +1,88 @@
+data segment
+ mem  dw 0,0,38h,0,36h,0,0,33h,32h,31h
+  dw 34h,0,38h,0,0,35h,34h,33h,32h,31h
+   dw 32h,0,38h,0,36h,35h,34h,0,32h,0
+ dw 38h,0,38h,0,0,0,0,33h,32h,35h
+  dw 35h,0,38h,0,36h,0,34h,33h,32h,35h
+   dw 0,0,38h,0,36h,0,34h,33h,0,31h
+ dw 34h,0,38h,0,36h,35h,0,33h,32h,38h
+  dw 31h,0,38h,0,36h,35h,34h,0,32h,39h
+   dw 33h,0,38h,0,36h,35h,0,33h,32h,38h
+  dw 38h,0,38h,0,36h,35h,34h,33h,32h,37h
+data ends
+
+stack segment stack
+ dw 20h dup(?) 
+top label word
+stack ends
+
+code segment
+	assume cs:code,ds:data,ss:stack
+main proc far 
+
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+
+	
+	
+	lea si,mem
+	lea di,mem
+	
+	mov cx,100d
+	
+l1: cmp WORD PTR [si],0
+	je isZero
+	jmp noZero
+	
+isZero:
+	inc si
+	inc si
+	loop l1
+	
+noZero:
+	mov dx,[si]
+	mov [di],dx
+	inc di
+	inc di
+	
+	inc si
+	inc si
+	loop l1
+	
+loopend:
+	mov bx,si 
+	sub bx,di
+	mov cx,bx ;last zero number
+	
+l2:	mov ax,'0'
+	inc di
+	inc di
+	mov [di],ax
+	loop l2
+
+input:
+	mov cx,100d
+	lea si,mem
+l3:	mov dx,[si]
+	mov ah,02h
+	int 21h
+	
+	mov dl,' '
+	mov ah,02h
+	int 21h
+	
+	inc si
+	inc si
+	loop l3
+			
+exit: 
+	mov ah,4ch
+	int 21h
+
+main endp
+ code  ends
+  end main

@@ -1,0 +1,68 @@
+data segment
+ARRAY db 61h,62h,63h,64h,65h,66h,22h,24h,28h,24h,55h,54h,'$'
+N EQU ($-ARRAY)
+up db 0
+down db 0
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov al,0 ;up
+	mov dl,0 ;down
+
+	lea si,ARRAY
+	mov cx,N 
+	; 61h 'a'  2fh '0'	
+
+l1:	
+	cmp BYTE PTR[si],61h 
+	ja isup
+l4:	cmp BYTE PTR[si],2fh
+	jb isdown
+l2:	inc si
+	loop l1
+	jmp result
+isup:
+	inc al
+	jmp l4
+isdown:
+	inc dl
+	jmp l2
+	
+result:
+	mov up,al
+	mov down,dl
+	
+	mov bh,al
+	mov bl,dl
+	
+	mov cx,16
+l3: rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,2
+	int 21h	
+	loop l3
+	
+exit:
+	mov ah,4ch
+	int 21h
+	
+	p endp
+code ends 
+	end p

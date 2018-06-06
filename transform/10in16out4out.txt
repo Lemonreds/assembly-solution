@@ -1,0 +1,117 @@
+data segment
+carryout db 0dh,0ah,' carry out!','$'
+crlfmsg db 0dh,0ah,'$'
+data ends
+
+stacks segment stack
+dw 20 dup(?)
+top label word
+stacks ends
+
+code segment
+	assume cs:code,ss:stacks,ds:data
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stacks
+	mov ss,ax
+	lea sp,top
+	
+	
+	mov cx,5;max number 65535
+	xor bx,bx
+l1:	mov ah,01h
+	int 21h
+	
+	cmp al,0dh
+	je input
+	
+	cmp al,30h
+	jb l1
+	cmp al,39h
+	ja l1
+	
+	and ax,1111b
+	xchg ax,bx
+	mov di,10
+	mul di
+	jc carry
+	add bx,ax
+	jc carry
+	
+	loop l1
+	
+carry:
+	lea dx,carryout
+	mov ah,09h
+	int 21h
+	jmp exit	
+	
+input:
+	call hex
+	call Four
+	jmp exit
+
+	
+	
+Hex proc near
+	;in bx !
+	mov ch,4
+l2:	
+	mov cl,4
+	rol bx,cl
+	mov dl,bl
+	and dl,1111b
+	add dl,30h
+	
+	cmp dl,39h
+	jbe l3
+	add dl,7h
+l3:
+	mov ah,02h
+	int 21h
+	
+	dec ch
+	jnz l2
+	
+
+	call crlf
+ret 
+Hex endp
+
+Four proc near
+	
+	mov ch,8
+l4:	mov cl,2
+	rol bx,cl
+	mov dl,bl
+	and dl,11b
+	add dl,30h
+	mov ah,02h
+	int 21h
+	
+	dec ch
+	jnz l4
+	
+	call crlf
+ret
+Four endp
+
+crlf proc near
+	lea dx,crlfmsg
+	mov ah,09h
+	int 21h
+	
+ret
+crlf endp
+	
+	
+exit:
+	mov ah,4ch
+	int 21h
+
+main endp
+code ends
+end main 

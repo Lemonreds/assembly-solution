@@ -1,0 +1,72 @@
+data segment
+
+string1 db '123456','$'
+string2 db 'abcdefg','$'
+
+file db 'a\abc.txt',0
+fh dw ?
+
+copybuf db 100 dup(?)
+
+
+error_msg db 0dh,0ah,'error!','$' 
+success_msg db 0dh,0ah,'done!','$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	;create file
+	lea dx,file
+	mov cx,0
+	mov ah,3ch
+	int 21h
+	jc error
+	mov fh,ax
+	;buff 1
+	xor ch,ch
+	mov cl,6	
+	;write file
+	lea dx,string1
+	mov bx,fh		
+	mov ah,40h
+	int 21h	
+	jc error	
+	
+
+	;buff 2
+	xor ch,ch
+	mov cl,7	
+	;write file
+	lea dx,string2
+	mov bx,fh		
+	mov ah,40h
+	int 21h
+	jc error	
+	jmp exit
+	
+error:
+	lea dx,error_msg
+	mov ah,09h
+	int 21h
+	
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

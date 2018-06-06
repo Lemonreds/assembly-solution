@@ -1,0 +1,67 @@
+data segment
+array dw 12,12,1
+data ends
+
+stack segment stack
+ dw 20h dup(?) 
+top label word
+stack ends
+
+code segment
+	assume cs:code,ds:data,ss:stack
+main proc far 
+
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+
+	xor cl,cl
+	
+	mov si,0
+    mov di,2
+    call compare
+     
+    mov si,0
+    mov di,4
+    call compare
+     
+    mov si,2
+    mov di,4
+    call compare
+ 
+
+show:
+	mov bl,cl
+	mov cx,2	
+l1:	
+	rol bl,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l1
+	
+exit: 
+	mov ah,4ch
+	int 21h
+	
+
+compare proc near
+	mov ax,array[si]
+	mov bx,array[di]
+	cmp ax,bx
+	je equals
+	ret
+equals:
+	inc cl
+	ret	
+compare endp
+
+
+main endp
+ code  ends
+  end main

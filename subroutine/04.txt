@@ -1,0 +1,112 @@
+data segment
+val1  EQU  65535
+data ends
+
+stack segment stack
+dw 30h dup(?)
+top label word
+stack ends
+
+
+CODES SEGMENT
+    ASSUME CS:CODES,ss:stack,ds:data
+BANDO PROC FAR
+
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov ax,val1
+	push ax
+
+	call PAIRS
+    
+	jmp exit
+PAIRS proc near
+
+	push bp
+	mov	bp,sp
+	
+	mov bx,	[bp+4]
+	
+	mov cx,16
+l1:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l1
+	
+	
+	
+	mov cx,8
+l2:	mov dl,' '
+	mov ah,02h
+	int 21h
+	loop l2
+	
+	pop bp
+	push bx
+	
+	call OUTOCT
+	ret
+PAIRS endp
+
+OUTOCT proc near
+	
+	push bp
+	mov bp,sp
+	mov bx,[bp+4]
+	
+	
+	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	
+	mov cx,5
+l3:	push cx
+	mov cl,3
+	rol bx,cl
+	mov dl,bl
+	and dl,111b
+	add dl,30h
+	mov ah,02h
+	int 21h
+	pop cx
+	loop l3
+	
+	pop bp
+	call CRTF	
+
+ret
+OUTOCT endp
+
+CRTf proc near
+	mov dl,0dh
+	mov ah,02h
+	int 21h
+	
+	mov dl,0ah
+	mov ah,02h
+	int 21h
+
+ret
+CRTF endp
+
+exit:	
+    MOV AH,4CH
+    INT 21H
+	
+	
+BANDO endp
+CODES ENDS
+    END BANDO
+	
+

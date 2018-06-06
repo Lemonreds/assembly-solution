@@ -1,0 +1,36 @@
+
+data segment
+N dw 1101000000001101b
+data ends
+
+
+code segment
+	assume ds:data,cs:code
+p proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov bx,n
+	
+	mov cx,16
+	
+l1:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	
+	mov ah,02h
+	int 21h
+	loop l1
+	
+	
+	mov ah,4ch
+	int 21h
+	
+
+p endp
+	code ends
+	end p
+
+

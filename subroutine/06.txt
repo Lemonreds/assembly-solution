@@ -1,0 +1,66 @@
+
+
+CODES SEGMENT
+    ASSUME CS:CODES
+START:
+    
+
+
+	mov cx,5	
+	xor bx,0
+get:
+	mov ah,01h
+	int 21h
+	
+	cmp al,0dh
+	je getEnd
+	
+	
+	and ax,1111b
+	
+	xchg ax,bx
+	mov si,10
+	mul si
+	jc eror
+	add bx,ax
+	jc eror
+	
+	loop get
+
+	
+	mov dl,0ah
+	mov ah,02h
+	int 21h
+	
+getEnd:	
+	call inputHex
+eror:
+exit:	
+    MOV AH,4CH
+    INT 21H
+inputHex proc near
+
+	mov ch,4	
+l2:	mov cl,4
+	rol bx,cl
+	mov dl,bl
+	and dl,1111b
+	add dl,30h
+	
+	cmp dl,39h
+	jbe input
+	add dl,7h
+input:
+	mov ah,02h
+	int 21h
+	
+	dec ch	
+	jnz l2	
+	
+	ret
+inputHex endp
+  	
+
+CODES ENDS
+    END START
+

@@ -1,0 +1,118 @@
+data segment
+array db 1,2,3,4,5,6,7,8,9,10,-1,-2,-3,-4,-5,-6,7,-8,9,10
+
+p db 20 dup (0)
+n db 20 dup (0)
+
+
+positive db ?
+negative db ?
+
+number db ?
+
+infoposite db 0ah,'positive: ','$'
+infonegati db 0ah,'negative: ','$'
+data ends
+
+code segment
+	assume ds:data,cs:code
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	lea di,p
+	lea bp,n
+		
+	lea si,array
+	mov cx,20
+	
+l1:	mov al,[si]
+	or al,al
+	js negat	
+	;jnz positive
+	inc  positive
+	mov BYTE PTR [di],al
+	inc di
+	inc si
+	loop l1
+	jmp input
+	
+negat:
+	inc  negative
+	mov BYTE PTR [bp],al
+	inc bp
+	inc si
+	loop l1
+	
+input:	
+
+	lea dx,infoposite
+	mov ah,09h
+	int 21h
+	;positive
+	
+	mov cx,8
+	
+	mov bl,positive
+l2:	rol bl,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,2h
+	int 21h
+	loop l2
+	
+	
+	lea dx,infonegati
+	mov ah,09h
+	int 21h
+	;negative
+	
+	mov cx,8	
+	mov bl,negative
+l3:	rol bl,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,2h
+	int 21h
+	loop l3
+;;--------------------	
+	
+	;length of n
+	mov dl,0ah
+	mov ah,02h
+	int 21h
+	
+
+	lea si,n
+l4:	
+	cmp BYTE PTR [si],0
+	je  l5
+	
+	inc number
+	inc si
+	jmp l4
+	
+	
+l5:	mov cx,8	
+	mov bl,number
+l6:	rol bl,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,2h
+	int 21h
+	loop l6
+	
+	
+	
+		
+exit:
+	mov ah,4ch
+	int 21h
+	
+	main endp	
+	code ends	
+	end main

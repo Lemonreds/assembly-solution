@@ -1,0 +1,74 @@
+data segment
+num DB 12H,34H,56H,78H,9AH,0BCH,23H,45H 
+	DB 67H,89H,0DEH,13H,24H,35H,46H,57H 
+	
+N DB $-num
+
+data ends
+code segment 
+	assume ds:data,cs:code
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,code
+	mov ss,ax
+	
+	mov cl,N
+	xor ch,ch
+	
+	lea si,num
+
+l1:	mov al,[si]
+	not al
+	
+	mov BYTE PTR [si],al	
+	inc si	
+	loop l1 
+	
+	mov cl,N
+	xor ch,ch
+	lea si,num
+	stc
+l3:	adc byte prt[si],0	
+	inc si	
+	loop l3
+	
+
+	
+	lea si,num	
+	mov cl,N
+	xor ch,ch	
+	
+l4:	mov di,8
+	mov bl,[si]
+l2:	rol bl,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	dec di
+	cmp di,0	
+	jnz l2	
+	
+	mov dl,' '
+	mov ah,02h
+	int 21h
+	inc si
+	
+	loop l4
+	
+exit:	
+	mov ah,4ch
+	int 21h
+	
+main endp
+code ends
+end main
+	
+	
+	
+	
+	

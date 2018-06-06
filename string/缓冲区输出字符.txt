@@ -1,0 +1,47 @@
+s1 segment stack
+	dw 20h dup(?)
+top label word
+s1 ends
+
+s2 segment 
+	buf db 100,?,100 dup(?)
+s2 ends
+
+s3 segment
+	assume cs:s3,ds:s2,ss:s1
+
+p proc far
+	mov ax,s1
+	mov ss,ax
+	lea sp,top
+	;-----------------------------------------
+	mov ax,s2
+	mov ds,ax
+	;-----------------------------------------
+	lea dx,buf
+	mov ah,0ah
+	int 21h
+	;-----------------------------------------
+	mov dl,0ah
+	mov ah,02h
+	int 21h
+	;-----------------------------------------
+	lea si,buf
+	inc si
+	
+	mov cl,[si]
+	inc si	
+	xor ch,ch
+
+l1: 	mov dl,[si]
+	mov ah,2
+	int 21h
+	
+	inc si
+	loop l1
+
+	mov ah,4ch
+	int 21h
+p endp
+	s3 ends
+	 	end p

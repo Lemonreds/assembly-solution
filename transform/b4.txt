@@ -1,0 +1,45 @@
+data segment
+
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+p proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov ah,01h
+	int 21h
+	mov bl,al
+	
+	mov ah,01h
+	int 21h
+	mov dl,al
+	
+	
+	add dl,bl
+	sub dl,'0'
+	mov ah,02h
+	int 21h
+	
+	
+	
+	mov ah,4ch
+	int 21h
+	
+
+p endp
+	code ends
+	end p
+
+

@@ -1,0 +1,53 @@
+data segment
+N dw 1011111101011011b
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov bx,N
+	
+	
+	xor cx,cx	
+	mov ax,bx	
+	
+l1:	mov dx,0		
+	mov bx,10
+	
+	;ax dx
+	div bx	
+	push dx	
+	inc cx
+	cmp ax,0
+	je input
+	jmp l1
+	
+input:	
+	pop dx
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop input
+	
+	
+	
+exit:
+	mov ah,4ch
+	int 21h
+	
+	p endp	
+	code ends	
+	end p 

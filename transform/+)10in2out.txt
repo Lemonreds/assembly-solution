@@ -1,0 +1,65 @@
+data segment
+meg db 0dh,0ah,' bad number !','$'
+data ends
+
+stack segment stack
+ dw 20h dup(?) 
+top label word
+stack ends
+
+code segment
+	assume cs:code,ds:data,ss:stack
+main proc far 
+
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov cx,5 ;max number is 65535
+	xor bx,bx
+		
+l1: mov ah,01h
+	int 21h
+	cmp al,0dh
+	je input
+	
+	and ax,1111b
+	xchg ax,bx
+	mov si,10
+	mul si
+	jc eror
+	add bx,ax
+	jc eror
+	
+	loop l1
+	
+input:
+	mov dl,0ah
+	mov ah,02h
+	int 21h
+	
+	mov cx,16
+l2:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l2
+	jmp exit
+	
+eror:
+	lea dx,meg
+	mov ah,09h
+	int 21h	
+exit: 
+	mov ah,4ch
+	int 21h
+
+
+main endp
+ code  ends
+  end main

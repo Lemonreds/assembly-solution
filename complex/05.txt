@@ -1,0 +1,98 @@
+data segment
+
+ID db  4,1,1,7,2,2,1,9,7,6,0,2,2,5,9,5,1
+last db ?;8
+
+W db 7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2
+
+Y db 1,0,'x'-30h,9,8,7,6,5,4,3,2 ;10=x
+data ends
+code segment 
+	assume ds:data,cs:code
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,code
+	mov ss,ax
+	
+	
+	lea si,ID
+	mov cx,17
+l0:	mov ah,01h
+	int 21h
+	sub al,30h
+	mov [si],al
+	inc si
+	loop l0	
+	
+	
+	lea si,ID	
+	lea di,W	
+	mov cx,17		
+	xor bx,bx
+	
+	;get w
+l1:	xor ax,ax
+	xor dx,dx
+	
+	mov al,[si]	
+	mov dl,[di]
+	;ax *¡¡dx = 
+	mul dx
+	add bx,ax
+	
+	inc di
+	inc si
+	loop l1
+	
+	;mod 11 
+	mov ax,bx
+	mov bx,11	
+	div bx	
+	; dl
+	;dl  find number in table
+	
+	lea si,Y	
+l3:	inc si
+
+	dec dl
+	cmp dl,0
+	jnz l3	
+	
+	
+	mov al,[si]
+	mov last,al
+	
+	mov dl,0dh
+	mov ah,02h
+	int 21h
+	mov dl,0ah
+	mov ah,02h
+	int 21h
+	
+	
+	mov cx,18	
+	lea si,ID
+	
+l2:	mov dl,[si]
+	add dl,30h		
+	mov ah,02h
+	int 21h	
+	
+	inc si
+	loop l2
+	
+exit:	
+	mov ah,4ch
+	int 21h
+	
+main endp
+code ends
+end main
+	
+	
+	
+	
+	

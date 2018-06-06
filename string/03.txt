@@ -1,0 +1,66 @@
+ data segment
+n db 0
+data ends
+
+code segment
+	assume cs:code,ds:data
+ p  proc far
+	mov ax,data
+	mov ds,ax	
+	
+	mov ah,01h
+	int 21h
+
+	cmp al,'a'
+	jb input
+	je behind
+	
+	cmp al,'z'
+	ja input
+	je blow
+
+	jmp normal 
+
+input:	xchg dl,al
+	mov ah,02h
+	int 21h
+	jmp endd
+
+normal :	xchg dl,al
+	dec dl
+	mov ah,02h
+	int 21h
+	inc dl
+	mov ah,02h
+	int 21h
+	inc dl
+	mov ah,02h
+	int 21h
+	jmp endd
+
+behind:    xchg dl,al
+        	mov ah,02h
+	int 21h
+	
+	inc dl
+	mov ah,02h
+	int 21h
+	jmp endd
+
+blow: 	xchg dl,al
+	dec dl
+	mov ah,02h
+	int 21h
+
+	inc dl	
+	mov ah,02h
+	int 21h
+	jmp endd
+
+endd:
+	mov ah,4ch
+	int 21h
+
+	p endp
+	code ends
+	end p

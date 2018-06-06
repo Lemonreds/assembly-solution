@@ -1,0 +1,69 @@
+data segment
+;char length = 10
+d0 db 'i m d0   !'
+d1 db 'i m d1   !'
+d2 db 'i m d2   !'
+d3 db 'i m d3   !'
+d4 db 'i m d4   !'
+d5 db 'i m d5   !'
+d6 db 'i m d6   !'
+d7 db 'i m d7   !'
+d8 db 'i m d8   !'
+d9 db 'i m d9   !'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov ah,01h
+	int 21h
+	
+	cmp al,'0'
+	jb exit
+	cmp al,'9'
+	ja exit
+	
+	sub al,30h
+	
+	
+	call input
+	jmp exit
+;in al
+input proc near
+
+	xor cx,cx
+	mov cl,al
+	
+	lea si,d0
+l1:	add si,10
+	loop l1
+	mov cx,10
+l2:	mov dl,[si]
+	inc si
+	mov ah,02h
+	int 21h
+	loop l2
+	ret
+input endp
+
+
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

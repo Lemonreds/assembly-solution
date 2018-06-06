@@ -1,0 +1,107 @@
+data segment
+
+filename db 'a\test.txt',0
+fh dw ?
+buf db 1024 dup (?)
+
+msg db 0dh,0ah,'error!','$'
+data ends
+
+stacks segment stack
+dw 60h dup(?)
+top label word
+stacks ends
+
+code segment 
+	assume ds:data,cs:code,ss:stacks
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stacks
+	mov ss,ax
+	lea sp,top
+	
+	;open file	
+	lea dx,filename
+	mov al,2
+	mov ah,3dh
+	int 21h
+	jc error
+	mov fh,ax
+	
+	;read file
+	lea dx,buf
+	mov bx,fh
+	mov cx,1024
+	mov ah,3fh
+	int 21h
+	jc error
+	mov cx,ax
+	mov di,ax
+	
+	
+	;A->a
+	lea si,buf
+	
+l2:	mov dl,[si]
+	cmp dl,'A'
+	jb l1
+	cmp dl,'Z'
+	ja l1
+	add dl,20h
+	mov [si],dl
+l1:
+	inc si
+	loop l2
+
+	;move file point	
+	xor dx,dx
+	mov cx,0
+	mov al,0
+	mov bx,fh
+	mov ah,42h
+	int 21h
+	
+	;write to file
+	lea dx,buf
+	mov bx,fh
+	mov cx,di ;length
+	mov ah,40h
+	int 21h
+	jc error
+	
+	;colse
+	mov bx,fh
+	mov ah,3eh
+	int 21h
+exit:	
+	mov ah,4ch
+	int 21h
+
+error:
+
+	mov bx,ax
+	mov cx,16
+l5:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l5
+	
+	lea dx,msg
+	mov ah,09h
+	int 21h
+	
+	jmp exit
+main endp
+code ends
+end main
+	
+	
+	
+	
+	

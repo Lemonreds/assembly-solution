@@ -1,0 +1,72 @@
+data segment
+msg db 0dh,0ah,'Carry out!','$'
+zero db 0dh,0ah,'all is zero','$'
+data ends
+
+stack segment stack
+ dw 20h dup(?) 
+top label word
+stack ends
+
+code segment
+	assume cs:code,ds:data,ss:stack
+main proc far 
+
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+;
+	mov ax,1
+	mov bx,2
+	mov cx,4
+	xor dx,dx
+	
+	cmp ax,0
+	je setZero
+	cmp bx,0
+	je setZero
+	cmp cx,0
+	je setZero
+	;sum
+	add dx,ax
+	jc eror
+	add dx,bx
+	jc eror
+	add dx,cx
+	jc eror
+	jmp input
+	
+setZero:
+	mov ax,0
+	mov bx,0
+	mov cx,0
+
+	lea dx,zero
+	mov ah,09h
+	int 21h
+	jmp exit		
+eror:
+	lea dx,msg
+	mov ah,09h
+	int 21h
+	jmp exit
+input:
+	mov cx,16
+	mov bx,dx
+l1:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l1
+exit: 
+	mov ah,4ch
+	int 21h
+
+main endp
+ code  ends
+  end main

@@ -1,0 +1,70 @@
+data segment
+
+file db 'a\test.txt',0
+buf db 100 dup(?)
+fh dw ?
+
+
+error_msg db 0dh,0ah,'error!','$' 
+success_msg db 0dh,0ah,'done!','$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	;open file
+	lea dx,file
+	mov al,0
+	mov ah,3dh
+	int 21h
+	jc error
+	mov fh,ax
+	;read file
+	lea dx,buf	
+	mov cx,100
+	mov bx,fh
+	
+	mov ah,3fh	
+	int 21h
+	jc error
+	
+	mov cx,ax
+	lea si,buf
+	
+l1:	mov dl,[si]
+	inc si
+	mov ah,02h
+	int 21h
+	loop l1
+	
+
+	
+	jmp exit	
+	
+error:
+	lea dx,error_msg
+	mov ah,09h
+	int 21h
+	
+	
+	
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

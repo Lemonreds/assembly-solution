@@ -1,0 +1,75 @@
+data segment
+
+
+
+data ends
+
+stacks segment stack
+dw 40h dup(?)
+top label word
+stacks ends
+
+code segment 
+	assume ds:data,cs:code,ss:stacks
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+		
+	mov ax,stacks
+	mov ss,ax
+	lea sp,top
+	
+	
+	mov di,13
+	call prime
+		
+	mov dl,bl
+	add dl,30h
+	mov ah,02h
+	int 21h
+	jmp exit
+	
+; in di
+; out bl   (0 no 1 yes)
+prime proc near
+	
+	
+	mov cx,2 ; 1和他本身之外
+	
+l1:	xor dx,dx
+	mov ax,di
+	
+	div cx	
+	
+	cmp dx,0
+	je NotPrime
+	
+	inc cx
+	cmp cx,di
+	jb l1
+	
+	jmp YesPrime
+	
+NotPrime:
+	mov bl,0
+	ret
+YesPrime:
+	mov bl,1
+	ret
+prime endp
+
+
+
+exit:	
+	mov ah,4ch
+	int 21h
+	
+main endp
+code ends
+end main
+	
+	
+	
+	
+	

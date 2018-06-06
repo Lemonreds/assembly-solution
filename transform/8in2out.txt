@@ -1,0 +1,70 @@
+data segment
+
+data ends
+
+stack segment stack
+ dw 20h dup(?) 
+top label word
+stack ends
+
+code segment
+	assume cs:code,ds:data,ss:stack
+main proc far 
+
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	;reset
+	xor bx,bx	
+	
+	;get first input
+l1:	mov ah,01h
+	int 21h
+	
+	and al,1
+	add bl,al
+	
+;==================
+	;get last input	
+	mov si,5 ;loop
+	mov cl,3	
+	
+l2: 	mov ah,01h
+	int 21h
+	cmp al,0dh
+	je input
+	
+	rol bx,cl
+	and al,111b
+	add bl,al
+	
+	dec si 
+	jnz  l2  ;loop out
+	
+	
+input:	
+	mov cx,16
+	
+	mov dl,0ah
+	int 21h
+	
+l3:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l3
+	
+exit: 
+	mov ah,4ch
+	int 21h
+
+
+main endp
+ code  ends
+  end main

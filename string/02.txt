@@ -1,0 +1,31 @@
+data segment
+
+data ends
+
+code segment
+	assume cs:code,ds:data
+ p  proc far
+	mov ax,data
+	mov ds,ax	
+	
+	mov ah,01h
+	int 21h
+
+	cmp al,'a'
+	jb input
+	cmp al,'z'
+	ja input
+
+	sub al,32	
+
+input :	xchg dl,al
+	mov ah,02h
+	int 21h
+
+
+	mov ah,4ch
+	int 21h
+
+	p endp
+	code ends
+	end p

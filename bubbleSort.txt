@@ -1,0 +1,70 @@
+data segment
+	a  db 31h,32h,38h,39h,30h,33h,34h,35h,37h,36h
+	n  dw $-a
+data ends
+
+stacks segment stack
+dw 20h dup(?)
+top label word
+stacks ends
+
+code segment 
+	assume ds:data,cs:code,ss:stacks
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stacks
+	mov ss,ax
+	lea sp,top
+	
+	
+	;外层循环
+	mov cx,n
+	dec  cx
+	
+	;保存cx的值到di 初始化bx
+l1:	mov di,cx
+	mov bx,0
+
+	;比较 是否交换
+l2:	mov al,a[bx]
+	cmp al,a[bx+1]
+	;a[bx] <= a[bx] 不交换
+	jle	continue
+	;交换
+	xchg al,a[bx+1]
+	mov a[bx],al
+continue:
+	;下一个元素
+	add bx,1
+	loop l2	
+	;外层loop
+	mov cx,di
+	loop l1
+
+	
+	
+	;输出
+	mov cx,n
+	lea si,a
+	
+l3:	mov dl,[si]
+	inc si
+	mov ah,02h
+	int 21h
+	loop l3
+	
+exit:	
+	mov ah,4ch
+	int 21h
+	
+main endp
+code ends
+end main
+	
+	
+	
+	
+	

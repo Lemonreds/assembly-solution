@@ -1,0 +1,63 @@
+data segment
+
+str1 db '123456','$'
+len1 equ $-str1
+
+str2 db '123456','$'
+len2 equ $-str2
+
+match db 'MATCH!','$'
+nomatch db 'NO MATCH!','$'
+data ends
+
+stack segment stack
+ dw 20h dup(?) 
+top label word
+stack ends
+
+code segment
+	assume cs:code,ds:data,ss:stack
+main proc far 
+
+	mov ax,data
+	mov ds,ax
+	mov es,ax  ;this is important
+	
+	
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+
+	mov ah,len1
+	mov al,len2
+	
+	cmp al,ah
+	jne no
+	
+	mov ch,0
+	mov cl,al
+	
+	lea si,str1
+	lea di,str2
+	cld
+	repe cmpsb
+	jne no
+	
+yes:
+	lea dx,match
+	mov ah,09h
+	int 21h	
+	jmp exit	
+	
+no:	lea dx,nomatch
+	mov ah,09h
+	int 21h	
+	
+exit: 
+	mov ah,4ch
+	int 21h
+
+main endp
+ code  ends
+  end main

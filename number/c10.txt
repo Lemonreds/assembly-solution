@@ -1,0 +1,102 @@
+;guisu
+data segment
+
+M dw 1,2,3,4,5,6,7,7,7,7
+dw 1,2,3,4,5,6,7,7,7,7
+	dw 1,2,3,4,5,6,7,7,7,7
+  
+  
+odd dw 30 dup (?)
+lengthODD db 0
+eve dw 30 dup (?) 
+lengthEVE db 0
+
+crlf db 0dh,0ah,'$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+		
+	mov cx,30
+	lea si,M
+	
+	lea bx,odd
+	lea di,eve
+	
+l1:	mov ax,[si]
+	inc si
+	inc si
+	
+	cmp ax,0
+	je l1
+	
+	test ax,1b
+	jz iseven;
+	;odd
+	mov [bx],ax
+	inc bx
+	inc bx
+	inc lengthODD
+	loop l1
+	jmp input
+	
+	
+iseven:
+	mov [di],ax
+	inc di
+	inc di
+	inc lengthEVE
+	loop l1
+
+	
+input:
+	mov bl,lengthODD
+	call ppp
+	
+	mov bl,lengthEVE
+	call ppp
+	
+	jmp exit
+;input number
+;input : bl
+ppp proc near
+		
+	mov cx,8	
+l3:	rol bl,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l3
+	
+	lea dx,crlf
+	mov ah,09h
+	int 21h
+	ret	
+ppp endp
+
+	
+
+	
+exit:
+	mov ah,4ch
+	int 21h			
+	p endp	
+	
+	
+code ends 
+	end p

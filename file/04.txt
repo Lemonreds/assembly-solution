@@ -1,0 +1,116 @@
+data segment
+
+buf db 100,?,100 dup(?)
+
+file db 'a\abc.txt',0
+fh dw ?
+
+copyfile db 'a\def.txt',0
+copyfh dw ?
+
+copybuf db 100 dup(?)
+
+
+error_msg db 0dh,0ah,'error!','$' 
+success_msg db 0dh,0ah,'done!','$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	;create file
+	lea dx,file
+	mov cx,0
+	mov ah,3ch
+	int 21h
+	jc error
+	mov fh,ax
+	
+	;buff 
+	lea dx,buf
+	mov ah,0ah
+	int 21h
+	;get buff length in stack 	
+	xor ch,ch
+	mov cl,[buf+1]		
+	;write file
+	lea dx,buf+2
+	mov bx,fh		
+	mov ah,40h
+	int 21h
+	jc error		
+	
+	
+	
+	;create new file2	
+	lea dx,copyfile
+	mov cx,0
+	mov ah,3ch
+	int 21h
+	jc error	
+	mov copyfh,ax
+	;change point
+	xor cx,cx
+	xor dx,dx
+	mov bx,fh
+	mov al,0	
+	mov ah,42h
+	int 21h
+	jc error
+	
+	
+	;read from file1
+	lea dx,copybuf
+	mov bx,fh
+	xor ch,0
+	mov cl,[buf+1]	
+	
+	mov ah,3fh
+	int 21h
+	jc error
+
+	;show the read content
+	xor ch,0
+	mov cl,[buf+1]	
+	lea si,copybuf
+l1:	mov dl,[si]
+	inc si
+	mov ah,02h
+	int 21h
+	loop l1	
+	
+	;write to copyfile
+	lea dx,copybuf
+	mov bx,copyfh
+	mov ch,0
+	mov cl,[buf+1]	
+	mov ah,40h
+	int 21h
+	jc error	
+	jmp exit	
+	
+error:
+	lea dx,error_msg
+	mov ah,09h
+	int 21h
+	
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

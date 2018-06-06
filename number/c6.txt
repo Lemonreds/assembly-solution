@@ -1,0 +1,102 @@
+data segment
+crlf db 0dh,0ah,24h
+numbers db 0
+words db 0
+others db 0
+data ends
+
+stack segment stack
+ dw 20h dup(?) 
+top label word
+stack ends
+
+code segment
+	assume cs:code,ds:data,ss:stack
+main proc far 
+
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+
+	
+	xor cx,cx
+getChar:
+	mov ah,01h
+	int 21h
+		
+	cmp al,0dh
+	je input
+	
+	inc cl
+	
+	cmp al,'0'
+	jb getChar
+	cmp al,'9'
+	ja l1
+	
+	inc numbers	
+	jmp getChar	
+	
+l1:	cmp al,'A'
+	jb getChar
+	cmp al,'Z'
+	ja l2
+	
+	inc words
+	jmp getChar
+l2:	cmp al,'a'
+	jb getChar
+	cmp al,'z'
+	ja getChar
+	
+	inc words
+	jmp getChar
+
+input:
+	
+	
+	sub cl,numbers
+	sub cl,words
+	mov others,cl
+	
+	;other
+	mov bl,others
+	call result
+	
+	mov bl,numbers
+	call result
+	
+	mov bl,words
+	call result
+	
+	jmp exit
+result proc near 
+	
+	mov cx,8
+l5:	rol bl,1
+	mov dl,bl
+	and dl,1
+	add dl,30h	
+	mov ah,02h
+	int 21h
+	loop l5
+	
+	lea dx,crlf
+	mov ah,09h
+	int 21h
+	ret
+
+result endp
+	
+
+	
+exit: 
+	mov ah,4ch
+	int 21h
+
+main endp
+ code  ends
+  end main

@@ -1,0 +1,83 @@
+data segment
+info1 db 'please input fisrt string',0ah,'$'
+info2 db 0ah,'please input second string',0ah,'$'
+
+string1 db 101,?,101 dup (?)
+string2 db 101,?,101 dup (?)
+
+match	db 0ah,'match',0ah,'$'
+nomatch db 0ah,'no match',0ah,'$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	;;get input
+	lea dx,info1
+	mov ah,09h
+	int 21h
+	lea dx,string1
+	mov ah,0ah
+	int 21h
+		
+	lea dx,info2
+	mov ah,09h
+	int 21h
+	lea dx,string2
+	mov ah,0ah
+	int 21h
+	
+getlength:
+	mov al,string1+1	
+	mov bl,string2+1
+	
+compare:
+	cmp al,bl
+	jne no	
+	mov cl,al	
+	lea si,string1
+	lea di,string2		
+l1:	
+	mov ax,[si]
+	mov bx,[di]
+	cmp ax,bx
+	jne no
+	;je
+	cmp cl,0
+	je yes
+	;jne
+	inc si
+	inc di
+	loop l1
+	
+yes:
+	lea dx,match
+	mov ah,09h
+	int 21h
+	jmp exit	
+no:
+	lea dx,nomatch
+	mov ah,09h
+	int 21h
+	jmp exit			
+	
+exit:
+	mov ah,4ch
+	int 21h
+	
+	p endp
+code ends 
+	end p

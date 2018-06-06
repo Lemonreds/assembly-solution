@@ -1,0 +1,51 @@
+s segment
+	org 100h
+	assume cs:s,ds:s,ss:s,es:s
+p1 proc near
+	lea ax,ans
+	push ax
+	mov ax,num
+	push ax
+	call p2
+	mov ah,4ch
+	int 21h
+
+num dw 17
+ans dw ?
+p1 endp
+p2 proc near
+	push bp
+	mov bp,sp
+	push ax
+	push bx
+	push cx
+	
+	mov ax,[bp+4];number
+	mov cx,0
+	mov bx,1
+l1:	sub ax,bx
+	jl exit
+	inc cx
+	add bx,2
+	jmp l1
+
+exit:
+	mov bx,[bp+6]
+	mov [bx],cx
+	pop cx
+	pop bx
+	pop ax
+	pop bp
+
+
+	ret 4
+p2 endp
+s ends
+	end p1
+	
+	
+	
+	
+	
+	
+	

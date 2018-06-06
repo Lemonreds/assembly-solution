@@ -1,0 +1,58 @@
+data segment
+
+crlf db 0dh,0ah,'$'
+
+carray db 0dh,0ah,"carray out",'$'
+
+N dw 10
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+		
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov cx,n
+	xor ax,ax
+	mov bx,1
+	
+l1:	add ax,bx
+	jc carrayout
+	inc bx
+	loop l1
+	
+	mov cx,16
+	mov bx,ax
+	
+l2:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l2
+	jmp exit
+	
+carrayout:
+	lea dx,carray
+	mov ah,09h
+	int 21h
+	
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

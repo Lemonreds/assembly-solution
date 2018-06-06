@@ -1,0 +1,49 @@
+data segment
+string db 'notePAD +++ string','$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	lea si,string
+	
+	mov cx,0
+l1:
+	cmp BYTE PTR [si],'$'
+	je input
+	inc si
+	inc cx
+	jmp l1
+	
+input:
+	lea si,string
+	add si,cx
+	dec si
+	
+l2:
+	mov dl,[si]
+	mov ah,02h
+	int 21h	
+	dec si
+	loop l2	
+			
+exit:
+	mov ah,4ch
+	int 21h
+	
+	p endp
+code ends 
+	end p

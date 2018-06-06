@@ -1,0 +1,90 @@
+data segment
+carryoutmsg db 0dh,0ah,'carry out!','$'
+crlf db 0dh,0ah,'$'
+data ends
+
+stacks segment stack
+dw 20 dup(?)
+top label word
+stacks ends
+
+code segment
+	assume cs:code,ss:stacks,ds:data
+main proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stacks
+	mov ss,ax
+	lea sp,top
+	
+	xor di,di
+	xor bx,bx	
+	mov cx,5
+	
+input:
+	mov ah,01h
+	int 21h
+	
+	cmp al,0dh
+	je show
+	
+	cmp al,'-'
+	jne nosign
+	
+	cmp cx,5
+	jne input
+	mov di,1
+
+nosign:
+	cmp al,30h
+	jb input
+	cmp al,39h
+	ja input
+	
+	and ax,1111b
+	xchg bx,ax
+	mov dx,10
+	mul dx
+	add ax,8000h
+	jc carryout
+	add bx,ax
+	jc carryout
+	sub bx,8000h
+	dec cx
+	cmp cx,0
+	jne input	
+	jmp show
+	
+carryout:
+	lea dx,carryoutmsg
+	mov ah,09h
+	int 21h
+	jmp exit
+	
+show:
+	lea dx,crlf
+	mov ah,09h
+	int 21h
+	
+	cmp di,1
+	jne l2
+	neg bx
+
+l2:	mov cx,16
+l3:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l3
+	
+exit:
+	mov ah,4ch
+	int 21h
+
+main endp
+code ends
+end main 

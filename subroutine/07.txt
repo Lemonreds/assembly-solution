@@ -1,0 +1,85 @@
+data segment
+
+table dw p0,p1,p2,p3,p4
+
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+l1:	mov ah,01h
+	int 21h
+	
+	cmp al,'0'
+	jb l1
+	cmp al,'9'
+	ja l1	
+	
+	
+	sub al,30h	
+	xor ch,ch
+	mov cl,al	
+	lea si,table
+l2:	inc si
+	inc si
+	loop l2
+	
+	jmp WORD PTR [si]
+	jmp exit	
+	
+p0 proc near
+	mov dl,'0'
+	mov ah,02
+	int 21h
+	ret 
+p0 endp
+
+p1 proc near
+	mov dl,'1'
+	mov ah,02
+	int 21h
+	ret 
+p1 endp
+
+p2 proc near
+	mov dl,'2'
+	mov ah,02
+	int 21h
+	ret 
+p2 endp
+
+p3 proc near
+	mov dl,'3'
+	mov ah,02
+	int 21h
+	ret 
+p3 endp
+
+p4 proc near
+	mov dl,'4'
+	mov ah,02
+	int 21h
+	ret 
+p4 endp
+
+
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

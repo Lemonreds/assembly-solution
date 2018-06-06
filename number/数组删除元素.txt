@@ -1,0 +1,72 @@
+
+data segment
+mem dw 32h,30h,31h,30h,30h,35h,'$'
+N EQU ($-mem)/2
+data ends
+
+stack segment stack
+dw 32h dup(0)
+top label word
+stack ends
+
+
+code segment
+	assume ds:data,ss:stack,cs:code
+p proc far
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+
+	
+	lea si,mem
+	lea di,mem
+	mov cx,n
+	
+l1:	mov ax,[si]
+	cmp ax,30h
+	je l2
+	jmp l3
+	
+l2:	inc si
+	inc si
+	loop l1
+	
+l3:	mov dx,[si]
+	mov [di],dx
+	inc di
+	inc di
+	
+	inc si
+	inc si
+	loop l1
+	
+	
+	
+	mov bx,si
+	sub bx,di
+	mov cx,bx
+	
+l4:	mov ax,30h
+	inc di
+	inc di
+	mov [di],ax
+	loop l4
+	
+	lea dx,mem
+	mov ah,09h
+	int 21h
+	
+	
+	mov ah,4ch
+	int 21h
+	
+
+p endp
+	code ends
+	end p
+
+

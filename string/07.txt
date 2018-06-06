@@ -1,0 +1,70 @@
+data segment
+buf db 101,0,101 dup(?)
+sapce db 0ah,'it is not a space !',0ah,'$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	;///
+	
+	;get sapce in al
+	mov ah,01h
+	int 21h
+	cmp al,' '
+	jne notpace
+	
+	lea si,buf
+	inc si
+	inc si
+	lea di,buf
+	inc di
+	
+input:	
+	mov ah,01h
+	int 21h
+	cmp al,' '
+	je inputEnd
+	mov [si],al
+	inc si
+	inc BYTE PTR [di]
+	jmp input
+	
+	
+notpace:
+	lea dx,sapce
+	mov ah,09h
+	int 21h
+	mov ah,4ch
+	int 21h
+	
+inputEnd:	
+	
+	mov cl,[di]
+	lea di,buf
+	inc di	
+	inc di	
+l1:	mov dl,[di]
+	mov ah,02h
+	inc di
+	int 21h
+	loop l1
+	
+	mov ah,4ch
+	int 21h
+	
+	p endp
+code ends 
+	end p

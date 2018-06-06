@@ -1,0 +1,432 @@
+
+;created on 2017 05 29
+
+data segment
+;menu
+open db 'Open $'
+save db ' Save  $'
+clear db 'Clear $'
+;default file
+file db  'MyEdit.txt',0
+;file handle
+fh dw ?
+;buf
+buf db 1600 dup(?)
+buflength dw 0
+
+;info
+myedit db 'MyEdit','$'
+OK db 'Success','$'
+NO db 'Failed','$'
+data ends
+;stack
+stack segment stack
+dw 100h dup(?)
+top label word
+stack ends
+;code
+code segment
+	assume ds:data,cs:code,ss:stack
+main proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	;si->buf tail
+	lea si,buf	
+	;init menu ,editarea
+	call menu
+	call editarea 	
+	
+;program menu
+;init menu
+menu proc near 
+
+	;draw  menu 
+	mov al,0
+	mov bh,70h ;background	
+	
+	mov ch,0;left line
+	mov cl,0;left row
+	
+	mov dh,0;right line
+	mov dl,80;right row
+	
+	mov ah,06h
+	int 10h
+	
+	;menu string
+	lea dx,open
+	mov ah,09h
+	int 21h
+	
+	lea dx,save
+	mov ah,09h
+	int 21h
+	
+	lea dx,clear
+	mov ah,09h
+	int 21h	
+
+	;menu right info
+	lea di,myedit
+	call msg	
+	ret
+menu endp
+;program editarea
+;init editarea
+editarea proc near
+
+	;draw editarea
+	mov al,0	
+	mov bh,1eh
+	
+	mov ch,1
+	mov cl,0
+	
+	mov dh,30
+	mov dl,80	
+	
+	mov ah,06h
+	int 10h
+	
+	;set cursor
+	mov bh,0	
+	mov dh,1
+	mov dl,0
+	mov ah,02h
+	int 10h
+	
+	;get input
+l2:	mov ah,00h
+	int 16h
+	
+	;check the special KEY input
+	cmp al,0dh
+	je _enter
+	
+	;backSpace
+	cmp al,08h
+	je _back
+	
+	cmp ah,48h
+	je _up
+	cmp ah,50h
+	je _down	
+	cmp ah,4bh
+	je _left 	
+	cmp ah,4dh
+	je _right
+	
+	cmp al,20h
+	je _space	
+	
+	jmp getchar
+_back:
+	cmp buflength,0
+	je l2	
+	;clear area
+	mov cx,300
+	mov dl,' '
+l5:	mov ah,02h
+	int 21h
+	loop l5
+	;set cursor
+	mov bh,0	
+	mov dh,1
+	mov dl,0
+	mov ah,02h
+	int 10h
+	;is KEY ENTER ?
+	cmp BYTE PTR [si],0ah
+	je lastIsEnter
+	
+	dec buflength	
+	call show	
+	jmp l2
+	
+	;DELETE KEY ENTER 
+lastIsEnter:
+	dec buflength
+	cmp buflength,0	
+	jle l2		
+	dec buflength	
+	call show
+	jmp l2
+	
+_down:	
+_enter:
+	
+	;get cursor
+	mov bh,0
+	mov ah,03h
+	int 10h
+	
+	;check is editarea end ?
+	cmp dh,23
+	jae l2
+	
+	; add enter char
+	mov BYTE PTR [si],0dh
+    mov BYTE PTR [si+1],0ah
+	add si,2
+	add buflength,2
+
+	;reset the cursor
+	mov bh,0
+	mov ah,03h
+	int 10h	
+	
+	inc dh
+	mov dl,0
+	mov ah,02h	
+	int 10h	
+	
+	jmp l2
+_up:
+	
+	mov bh,0	
+	mov ah,03h
+	int 10h	
+
+	cmp dh,0
+	jbe l2
+	
+	dec dh
+	mov cl,0
+	mov ah,02h
+	int 10h	
+	
+	jmp l2
+_left:
+	mov bh,0	
+	mov ah,03h
+	int 10h		
+	mov bh,0
+	dec dl	
+	mov ah,02h
+	int 10h	
+	jmp l2	
+_right:	
+	mov bh,0	
+	mov ah,03h
+	int 10h	
+	inc dl
+	mov ah,02h
+	int 10h
+	jmp l2
+_space:
+	mov bh,0	
+	mov ah,03h
+	int 10h			
+	cmp dh,0
+	jne  getchar
+	
+	cmp dl,4
+	jbe isopen	
+	cmp dl,7
+	jb l2
+	cmp dl,10
+	jbe issave	
+	cmp dl,12
+	jbe l2	
+	cmp dl,17
+	jbe isclear
+	
+	jmp l2
+isclear:
+	call menu_clear
+	jmp l2			
+isopen:	
+	call menu_open
+	jmp l2
+issave:	
+	call menu_save
+	jmp l2
+
+getchar:	
+	mov BYTE PTR [si],al
+	inc si
+	inc buflength
+	
+	mov bh,0	
+	mov ah,03h
+	int 10h	
+	cmp dh,0
+	je l2
+	
+	mov ah,02h
+	mov dl,al
+	int 21h
+	
+	mov ah,03h
+	int 10h
+	push cx
+	push dx
+
+	lea di,myedit
+	call msg
+	
+	pop dx
+	pop cx	
+	mov ah,02h
+	int 10h	
+	jmp l2
+	ret
+editarea endp
+;program menu_open
+menu_open proc near
+	call menu_clear
+	call openfile	
+	call show	
+	ret
+menu_open endp
+;program menu_save
+menu_save proc near
+	;new file
+	lea dx,file
+	mov cx,0
+	mov ah,3ch
+	int 21h
+	mov fh,ax
+	;write
+	mov bx,fh
+	mov cx,buflength
+	lea dx,buf
+	mov ah,40h
+	int 21h	
+	jnc saveOK
+	lea di,NO
+	call msg
+	ret 	
+saveOK:
+	lea di,OK
+	call msg
+	;colse this file to save the data
+	mov bx,fh
+	mov ah,3eh
+	int 21h
+	ret 	
+menu_save endp
+;program menu_clear
+menu_clear proc near
+
+	mov bh,0	
+	mov dh,1
+	mov dl,0
+	mov ah,02h
+	int 10h
+	
+	mov buflength,0	
+	
+	mov cx,1600
+	lea si,buf
+	mov dl,' '
+l4:	mov ah,02h
+	int 21h
+	loop l4
+	
+	mov bh,0	
+	mov dh,1
+	mov dl,0
+	mov ah,02h
+	int 10h
+	
+	ret 
+menu_clear endp
+;program openfile
+openfile proc near
+	;open file
+	lea dx,file
+	mov al,0
+	mov ah,3dh
+	int 21h	
+	jc create
+	mov fh,ax
+	
+	;read file
+	lea dx,buf
+	mov cx,1600
+	mov bx,fh	
+	mov ah,3fh
+	int 21h		
+	jnc openOK	
+	
+	lea di,NO
+	call msg
+	ret 	
+create:
+	mov cx,0
+	lea dx,file
+	mov ah,3ch
+	int 21h
+	ret 		
+openOK:
+	mov buflength,ax
+	lea di,OK
+	call msg
+	ret
+	
+openfile endp
+;program printMsg
+;param : di  (Print message)
+msg proc near
+
+	;set cursor
+	mov bh,0
+	mov dh,0
+	mov dl,70
+	mov ah,02h
+	int 10h	
+	;print msg
+	mov dx,di	
+	mov ah,09h
+	int 21h
+	;cursor recover
+	mov bh,0
+	mov dh,1
+	mov dl,0
+	mov ah,02
+	int 10h
+	
+	ret
+msg endp
+
+;program show
+show proc near
+
+	;clear	
+	mov bh,0	
+	mov dh,1
+	mov dl,0	
+	mov ah,02h
+	int 10h
+
+	mov cx,buflength	
+	
+	;reset
+	cmp cx,0	
+	je toclear
+	
+	;print the char
+	lea di,buf		
+l1:	mov BYTE PTR dl,[di]
+	mov ah,02h
+	int 21h	
+	inc di	
+	loop l1			
+	;set buf tail point SI
+	mov si,di
+	ret
+toclear:
+	call menu_clear
+	ret 
+	
+show endp
+	main endp		
+code ends 
+end main

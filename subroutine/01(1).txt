@@ -1,0 +1,72 @@
+data segment
+
+spaceline db 0dh,0ah,'$'
+
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	mov cx,5
+	xor bx,bx 
+	
+l2:	mov ah,01h
+	int 21h
+	cmp al,0dh
+	je input
+	
+	and ax,1111b
+	xchg ax,bx
+	mov si,10
+	mul si
+	jc exit 
+	add bx,ax
+	jc exit
+	loop l2		
+	
+input:
+
+	mov cx,16
+l3:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l3
+	
+	mov ax,bx
+	call SKIPLINES
+	jmp exit
+	
+;in ax
+SKIPLINES proc near
+	mov cx,ax
+l1:	lea dx,spaceline
+	mov ah,09
+	int 21h	
+	loop l1
+	ret 
+SKIPLINES endp
+
+	
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

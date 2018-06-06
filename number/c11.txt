@@ -1,0 +1,76 @@
+data segment
+
+crlf db 0dh,0ah,'$'
+data ends
+
+extra segment
+ARRAY dw 10,0,12,24,34,44,54,64,75,89,99
+extra ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack,es:extra
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,extra
+	mov es,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	
+	
+	lea di,ARRAY
+	mov cx,[di]
+	inc di
+	inc di
+
+	lea si,ARRAY
+	
+l1:	mov ax,44
+
+	mov dx,[di]
+	cmp dx,ax
+	jz success
+	
+	inc di
+	inc di
+	
+	loop l1
+
+defeat:	
+	clc 
+	jmp exit
+
+success:
+	stc
+	;calaclate offset
+	mov dx,di
+	sub dx,si
+	xchg dx,si
+	
+	mov cx,16
+	mov bx,si
+l2:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l2
+	
+exit:
+	mov ah,4ch
+	int 21h		
+	
+	p endp		
+code ends 
+	end p

@@ -1,0 +1,107 @@
+data segment
+A dw 37h
+B dw 37h
+crlf db 0dh,0ah,'$'
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+	
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	;test a  
+	mov ax,A
+	call oddeven
+	
+	cmp al,0
+	je o1
+	
+j1:	mov ax,B
+	call oddeven
+	
+	;o2
+	cmp al,0
+	je input	
+	
+	inc A
+	inc B
+	jmp input	
+	
+o1:	mov ax,B
+	call oddeven
+	
+	;o2
+	cmp al,0
+	je input
+	
+	
+	;j2	
+	;change posiotion
+	mov ax,A
+	mov bx,B	
+	mov A,bx
+	mov B,ax
+	
+input:
+	mov cx,16
+	mov bx,A
+l1:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h	
+	loop l1
+	
+	lea dx,crlf
+	mov ah,09h
+	int 21h 
+	
+	mov cx,16
+	mov bx,B
+l2:	rol bx,1
+	mov dl,bl
+	and dl,1
+	add dl,30h
+	mov ah,02h
+	int 21h
+	loop l2
+	
+	
+	
+	
+exit:
+	mov ah,4ch
+	int 21h			
+	p endp	
+		
+	
+;in ax number
+;out al  0 (oushu)or 1(jishu) 
+oddeven proc near
+	xor dx,dx;clear dx
+	mov bx,2
+	div bx  ;ax/bx dx(yushu) ax(shang)
+	cmp dx,0
+	je oushu
+	
+	mov al,1;jishu
+	ret
+oushu:
+	mov al,0
+	ret 
+oddeven endp	
+	
+code ends 
+	end p

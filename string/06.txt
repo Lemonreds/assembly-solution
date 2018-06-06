@@ -1,0 +1,65 @@
+data segment
+buf db 101,?,101 dup(?)
+data ends
+
+stack segment stack
+dw 20h dup(?)
+top label word
+stack ends
+
+code segment
+	assume ds:data,cs:code,ss:stack
+	p proc far 
+		
+	mov ax,data
+	mov ds,ax
+	
+	mov ax,stack
+	mov ss,ax
+	lea sp,top
+	
+	lea dx,buf
+	mov ah,0ah
+	int 21h
+	
+	;input ln
+	mov dl,0ah
+	mov ah,02h
+	int 21h
+	
+	lea si,buf
+	inc si
+	mov cl,[si]
+	inc si
+
+l1: mov dl,[si]
+	cmp dl,'a'
+	jb again
+	cmp dl,'z'
+	ja again	
+	mov dl,'?'
+	sub BYTE PTR [si],20h	
+	
+again:
+	inc si
+	loop l1
+	
+	
+	lea di,buf
+	inc di
+	mov cl,[di]
+	inc di	
+input:
+	mov dl,[di]
+	mov ah,02h
+	int 21h	
+	inc di
+	loop input
+	
+	
+	mov ah,4ch
+	int 21h
+	
+	p endp
+code ends 
+	end p
