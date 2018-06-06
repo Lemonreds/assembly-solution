@@ -1,7 +1,7 @@
 
-## Assembly Solution 
+## Assembly-Solution 
 
-一些关于汇编习题的解答。
+存放一些关于汇编习题的解答。
 
 ## 目录
 
